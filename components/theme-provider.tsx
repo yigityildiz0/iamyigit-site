@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
-type Theme = "light" | "dark";
+import { readTheme, persistTheme, type Theme } from "@/lib/theme-storage";
 const ThemeContext = createContext<{ theme: Theme; toggle: () => void }>({
   theme: "dark",
   toggle: () => {},
@@ -12,7 +12,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>("dark");
 
   useEffect(() => {
-    const saved = (localStorage.getItem("theme") as Theme) || "dark";
+    const saved = readTheme(() => window.localStorage.getItem("theme"));
     setTheme(saved);
     document.documentElement.dataset.theme = saved;
   }, []);
@@ -21,7 +21,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const next: Theme = theme === "dark" ? "light" : "dark";
     setTheme(next);
     document.documentElement.dataset.theme = next;
-    localStorage.setItem("theme", next);
+    persistTheme((value) => window.localStorage.setItem("theme", value), next);
   };
 
   return <ThemeContext.Provider value={{ theme, toggle }}>{children}</ThemeContext.Provider>;
